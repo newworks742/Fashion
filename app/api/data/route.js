@@ -15,7 +15,7 @@ import pool from '@/lib/db';
 export async function GET() {
   try {
     // Replace 'users' with your actual table name
-    const result = await pool.query('SELECT * FROM users LIMIT 100');
+    const result = await pool.query('SELECT * FROM product LIMIT 100');
 
     // Ensure we always return JSON
     return new Response(JSON.stringify(result.rows || []), { status: 200 });
