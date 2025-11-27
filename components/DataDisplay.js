@@ -1,161 +1,3 @@
-// 'use client';
-// import { useEffect, useState } from 'react';
-
-// export default function DataDisplay() {
-//   const [data, setData] = useState([]);
-//   const [loading, setLoading] = useState(true);
-//   const [error, setError] = useState(null);
-//   const [currentPage, setCurrentPage] = useState(1);
-//   const [totalCount, setTotalCount] = useState(0);
-//   const itemsPerPage = 12;
-
-//   useEffect(() => {
-//     const fetchData = async () => {
-//       setLoading(true);
-//       setError(null);
-      
-//       try {
-//         const res = await fetch(`/api/men?page=${currentPage}&limit=${itemsPerPage}`);
-        
-//         if (!res.ok) {
-//           throw new Error('Failed to fetch data');
-//         }
-        
-//         const json = await res.json();
-        
-//         if (json.error) {
-//           setError(json.error + ' - ' + (json.detail || ''));
-//           setData([]);
-//         } else {
-//           setData(json.data || []);
-//           setTotalCount(json.total || 0);
-//         }
-//       } catch (err) {
-//         setError(err.message);
-//         setData([]);
-//       } finally {
-//         setLoading(false);
-//       }
-//     };
-
-//     fetchData();
-//   }, [currentPage]);
-
-//   const totalPages = Math.ceil(totalCount / itemsPerPage);
-
-//   const handlePrevious = () => {
-//     setCurrentPage(p => Math.max(1, p - 1));
-//     window.scrollTo({ top: 0, behavior: 'smooth' });
-//   };
-
-//   const handleNext = () => {
-//     setCurrentPage(p => Math.min(totalPages, p + 1));
-//     window.scrollTo({ top: 0, behavior: 'smooth' });
-//   };
-
-//   if (loading) {
-//     return (
-//       <div className="min-h-screen bg-gray-50 p-6 flex items-center justify-center">
-//         <div className="text-center">
-//           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-//           <p className="text-gray-600">Loading products...</p>
-//         </div>
-//       </div>
-//     );
-//   }
-
-//   if (error) {
-//     return (
-//       <div className="min-h-screen bg-gray-50 p-6 flex items-center justify-center">
-//         <div className="text-center text-red-600">
-//           <p className="text-xl font-semibold mb-2">Error</p>
-//           <p>{error}</p>
-//         </div>
-//       </div>
-//     );
-//   }
-
-//   if (data.length === 0) {
-//     return (
-//       <div className="min-h-screen bg-gray-50 p-6 flex items-center justify-center">
-//         <p className="text-gray-600 text-lg">No products found</p>
-//       </div>
-//     );
-//   }
-
-//   return (
-//     <div className="min-h-screen bg-gray-50 p-6">
-//       <div className="flex justify-between items-center mb-6">
-//         <h2 className="text-3xl font-bold">Men's Collection</h2>
-//         <p className="text-gray-600">Showing {data.length} of {totalCount} products</p>
-//       </div>
-      
-//       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-//         {data.map((product, i) => (
-//           <div 
-//             key={product.id || i} 
-//             onClick={() => window.location.href = `/men/${product.producturl}`}
-//             className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-xl transition-shadow cursor-pointer"
-//           >
-//             <div className="h-64 bg-gradient-to-br from-purple-200 to-orange-100 flex items-center justify-center">
-//               <span className="text-gray-400 text-sm">Product Image</span>
-//             </div>
-//             <div className="p-4">
-//               <h3 className="font-semibold text-lg mb-2 line-clamp-2">{product.product_name}</h3>
-//               <p className="text-sm text-gray-600 mb-2">{product.subcategory} • {product.type}</p>
-//               <div className="flex items-center gap-2 mb-2">
-//                 <span className="text-xl font-bold">₹{product.discounted_price}</span>
-//                 {product.discount !== '0%' && (
-//                   <>
-//                     <span className="text-sm text-gray-500 line-through">₹{product.price}</span>
-//                     <span className="text-sm text-green-600 font-medium">{product.discount} off</span>
-//                   </>
-//                 )}
-//               </div>
-//               <div className="flex items-center gap-2 mb-3">
-//                 <span className="text-yellow-500">★</span>
-//                 <span className="text-sm font-medium">{product.rating}</span>
-//                 <span className="text-sm text-gray-500">({product.reviews})</span>
-//               </div>
-//               {product.colors && (
-//                 <p className="text-xs text-gray-600 mb-1">Colors: {product.colors}</p>
-//               )}
-//               {product.sizes && (
-//                 <p className="text-xs text-gray-600">Sizes: {product.sizes}</p>
-//               )}
-//             </div>
-//           </div>
-//         ))}
-//       </div>
-
-//       <div className="flex justify-center items-center gap-2 mt-8">
-//         <button 
-//           onClick={handlePrevious}
-//           disabled={currentPage === 1}
-//           className="px-4 py-2 bg-blue-600 text-white rounded disabled:bg-gray-300 disabled:cursor-not-allowed hover:bg-blue-700 transition-colors"
-//         >
-//           Previous
-//         </button>
-//         <div className="flex items-center gap-2">
-//           <span className="px-4 py-2 bg-white rounded shadow">
-//             Page {currentPage} of {totalPages}
-//           </span>
-//         </div>
-//         <button 
-//           onClick={handleNext}
-//           disabled={currentPage === totalPages}
-//           className="px-4 py-2 bg-blue-600 text-white rounded disabled:bg-gray-300 disabled:cursor-not-allowed hover:bg-blue-700 transition-colors"
-//         >
-//           Next
-//         </button>
-//       </div>
-//     </div>
-//   );
-// }
-
-
-
-
 'use client';
 import { useEffect, useState } from 'react';
 import { Filter, ChevronDown, ChevronUp } from 'lucide-react';
@@ -209,10 +51,13 @@ export default function DataDisplay() {
 
   const fetchFilterOptions = async () => {
     try {
-      const res = await fetch('/api/men');
+      const res = await fetch('/api/men/filters');
       if (res.ok) {
         const options = await res.json();
+        console.log('Filter options received:', options);
         setFilterOptions(options);
+      } else {
+        console.error('Failed to fetch filter options, status:', res.status);
       }
     } catch (err) {
       console.error('Failed to fetch filter options:', err);
@@ -222,7 +67,7 @@ export default function DataDisplay() {
   const fetchData = async () => {
     setLoading(true);
     setError(null);
-    
+
     try {
       const queryParams = new URLSearchParams({
         page: currentPage,
@@ -238,13 +83,13 @@ export default function DataDisplay() {
       });
 
       const res = await fetch(`/api/men?${queryParams}`);
-      
+
       if (!res.ok) {
         throw new Error('Failed to fetch data');
       }
-      
+
       const json = await res.json();
-      
+
       if (json.error) {
         setError(json.error + ' - ' + (json.detail || ''));
         setData([]);
@@ -292,10 +137,10 @@ export default function DataDisplay() {
   };
 
   const totalPages = Math.ceil(totalCount / itemsPerPage);
-  const activeFilterCount = 
-    filters.subcategory.length + 
-    filters.type.length + 
-    filters.colors.length + 
+  const activeFilterCount =
+    filters.subcategory.length +
+    filters.type.length +
+    filters.colors.length +
     filters.sizes.length +
     (filters.minPrice ? 1 : 0) +
     (filters.maxPrice ? 1 : 0) +
@@ -305,7 +150,7 @@ export default function DataDisplay() {
     return (
       <div className="min-h-screen bg-gray-50 p-6 flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-black mx-auto mb-4"></div>
           <p className="text-gray-600">Loading products...</p>
         </div>
       </div>
@@ -323,7 +168,7 @@ export default function DataDisplay() {
                 <Filter size={20} />
                 Filters
                 {activeFilterCount > 0 && (
-                  <span className="bg-blue-600 text-white text-xs rounded-full px-2 py-0.5">
+                  <span className="bg-black text-white text-xs rounded-full px-2 py-0.5">
                     {activeFilterCount}
                   </span>
                 )}
@@ -331,7 +176,7 @@ export default function DataDisplay() {
               {activeFilterCount > 0 && (
                 <button
                   onClick={clearFilters}
-                  className="text-sm text-blue-600 hover:text-blue-800 font-medium"
+                  className="text-sm text-black hover:text-blue-800 font-medium"
                 >
                   Clear All
                 </button>
@@ -344,7 +189,7 @@ export default function DataDisplay() {
                 <div className="border-b pb-4">
                   <button
                     onClick={() => toggleSection('subcategory')}
-                    className="flex justify-between items-center w-full mb-3 font-semibold text-gray-800 hover:text-blue-600"
+                    className="flex justify-between items-center w-full mb-3 font-semibold text-gray-800 hover:text-black"
                   >
                     Subcategory
                     {expandedSections.subcategory ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
@@ -357,7 +202,7 @@ export default function DataDisplay() {
                             type="checkbox"
                             checked={filters.subcategory.includes(subcategory)}
                             onChange={() => handleFilterChange('subcategory', subcategory)}
-                            className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
+                            className="w-4 h-4 text-black rounded focus:ring-black"
                           />
                           <span className="text-sm text-gray-700">{subcategory}</span>
                         </label>
@@ -372,7 +217,7 @@ export default function DataDisplay() {
                 <div className="border-b pb-4">
                   <button
                     onClick={() => toggleSection('type')}
-                    className="flex justify-between items-center w-full mb-3 font-semibold text-gray-800 hover:text-blue-600"
+                    className="flex justify-between items-center w-full mb-3 font-semibold text-gray-800 hover:text-black"
                   >
                     Type
                     {expandedSections.type ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
@@ -385,7 +230,7 @@ export default function DataDisplay() {
                             type="checkbox"
                             checked={filters.type.includes(type)}
                             onChange={() => handleFilterChange('type', type)}
-                            className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
+                            className="w-4 h-4 text-black rounded focus:ring-black"
                           />
                           <span className="text-sm text-gray-700">{type}</span>
                         </label>
@@ -399,7 +244,7 @@ export default function DataDisplay() {
               <div className="border-b pb-4">
                 <button
                   onClick={() => toggleSection('price')}
-                  className="flex justify-between items-center w-full mb-3 font-semibold text-gray-800 hover:text-blue-600"
+                  className="flex justify-between items-center w-full mb-3 font-semibold text-gray-800 hover:text-black"
                 >
                   Price Range
                   {expandedSections.price ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
@@ -411,14 +256,14 @@ export default function DataDisplay() {
                       placeholder="Min Price"
                       value={filters.minPrice}
                       onChange={(e) => handleFilterChange('minPrice', e.target.value)}
-                      className="w-full px-3 py-2 border rounded text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      className="w-full px-3 py-2 border rounded text-sm focus:ring-0 focus:ring-black focus:border-black"
                     />
                     <input
                       type="number"
                       placeholder="Max Price"
                       value={filters.maxPrice}
                       onChange={(e) => handleFilterChange('maxPrice', e.target.value)}
-                      className="w-full px-3 py-2 border rounded text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      className="w-full px-3 py-2 border rounded text-sm focus:ring-2 focus:ring-black focus:border-black"
                     />
                   </div>
                 )}
@@ -428,7 +273,7 @@ export default function DataDisplay() {
               <div className="border-b pb-4">
                 <button
                   onClick={() => toggleSection('rating')}
-                  className="flex justify-between items-center w-full mb-3 font-semibold text-gray-800 hover:text-blue-600"
+                  className="flex justify-between items-center w-full mb-3 font-semibold text-gray-800 hover:text-black"
                 >
                   Minimum Rating
                   {expandedSections.rating ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
@@ -442,7 +287,7 @@ export default function DataDisplay() {
                           name="rating"
                           checked={filters.minRating === rating.toString()}
                           onChange={() => handleFilterChange('minRating', rating.toString())}
-                          className="w-4 h-4 text-blue-600"
+                          className="w-4 h-4 text-black"
                         />
                         <span className="text-sm text-gray-700 flex items-center gap-1">
                           {rating}
@@ -454,7 +299,7 @@ export default function DataDisplay() {
                     {filters.minRating && (
                       <button
                         onClick={() => handleFilterChange('minRating', '')}
-                        className="text-xs text-blue-600 hover:text-blue-800 ml-2"
+                        className="text-xs text-black hover:text-blue-800 ml-2"
                       >
                         Clear rating filter
                       </button>
@@ -462,62 +307,6 @@ export default function DataDisplay() {
                   </div>
                 )}
               </div>
-
-              {/* Colors Filter */}
-              {filterOptions.colors && filterOptions.colors.length > 0 && (
-                <div className="border-b pb-4">
-                  <button
-                    onClick={() => toggleSection('colors')}
-                    className="flex justify-between items-center w-full mb-3 font-semibold text-gray-800 hover:text-blue-600"
-                  >
-                    Colors
-                    {expandedSections.colors ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
-                  </button>
-                  {expandedSections.colors && (
-                    <div className="space-y-2 max-h-48 overflow-y-auto">
-                      {filterOptions.colors.map(color => (
-                        <label key={color} className="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-2 rounded">
-                          <input
-                            type="checkbox"
-                            checked={filters.colors.includes(color)}
-                            onChange={() => handleFilterChange('colors', color)}
-                            className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
-                          />
-                          <span className="text-sm text-gray-700">{color}</span>
-                        </label>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              )}
-
-              {/* Sizes Filter */}
-              {filterOptions.sizes && filterOptions.sizes.length > 0 && (
-                <div className="pb-4">
-                  <button
-                    onClick={() => toggleSection('sizes')}
-                    className="flex justify-between items-center w-full mb-3 font-semibold text-gray-800 hover:text-blue-600"
-                  >
-                    Sizes
-                    {expandedSections.sizes ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
-                  </button>
-                  {expandedSections.sizes && (
-                    <div className="space-y-2 max-h-48 overflow-y-auto">
-                      {filterOptions.sizes.map(size => (
-                        <label key={size} className="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-2 rounded">
-                          <input
-                            type="checkbox"
-                            checked={filters.sizes.includes(size)}
-                            onChange={() => handleFilterChange('sizes', size)}
-                            className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
-                          />
-                          <span className="text-sm text-gray-700">{size}</span>
-                        </label>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              )}
             </div>
           </div>
         </div>
@@ -532,16 +321,16 @@ export default function DataDisplay() {
                 className="p-2 bg-white rounded-lg shadow hover:shadow-md transition-shadow"
                 title={showFilters ? 'Hide Filters' : 'Show Filters'}
               >
-                <Filter size={20} className={showFilters ? 'text-blue-600' : 'text-gray-600'} />
+                <Filter size={20} className={showFilters ? 'text-black' : 'text-gray-600'} />
               </button>
               <h2 className="text-3xl font-bold">Men's Collection</h2>
             </div>
-            
+
             <div className="flex items-center gap-4 w-full sm:w-auto">
               <select
                 value={filters.sortBy}
                 onChange={(e) => handleFilterChange('sortBy', e.target.value)}
-                className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-sm"
+                className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-black bg-white text-sm"
               >
                 <option value="">Sort By</option>
                 <option value="price_low">Price: Low to High</option>
@@ -550,7 +339,7 @@ export default function DataDisplay() {
                 <option value="rating_low">Rating: Low to High</option>
                 <option value="discount_high">Discount: High to Low</option>
               </select>
-              
+
               <p className="text-gray-600 text-sm whitespace-nowrap">
                 {loading ? 'Loading...' : `${totalCount} products`}
               </p>
@@ -571,7 +360,7 @@ export default function DataDisplay() {
               <p className="text-gray-600 text-lg mb-4">No products found matching your filters</p>
               <button
                 onClick={clearFilters}
-                className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                className="px-6 py-2 bg-black text-white rounded-lg hover:bg-blue-700"
               >
                 Clear Filters
               </button>
@@ -583,8 +372,8 @@ export default function DataDisplay() {
             <>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                 {data.map((product, i) => (
-                  <div 
-                    key={product.id || i} 
+                  <div
+                    key={product.id || i}
                     onClick={() => window.location.href = `/men/${product.producturl}`}
                     className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-xl transition-shadow cursor-pointer"
                   >
@@ -622,13 +411,13 @@ export default function DataDisplay() {
               {/* Pagination */}
               {totalPages > 1 && (
                 <div className="flex justify-center items-center gap-2 mt-8">
-                  <button 
+                  <button
                     onClick={() => {
                       setCurrentPage(p => Math.max(1, p - 1));
                       window.scrollTo({ top: 0, behavior: 'smooth' });
                     }}
                     disabled={currentPage === 1 || loading}
-                    className="px-4 py-2 bg-blue-600 text-white rounded disabled:bg-gray-300 disabled:cursor-not-allowed hover:bg-blue-700 transition-colors"
+                    className="px-4 py-2 bg-black text-white rounded disabled:bg-gray-300 disabled:cursor-not-allowed hover:bg-blue-700 transition-colors"
                   >
                     Previous
                   </button>
@@ -637,13 +426,13 @@ export default function DataDisplay() {
                       Page {currentPage} of {totalPages}
                     </span>
                   </div>
-                  <button 
+                  <button
                     onClick={() => {
                       setCurrentPage(p => Math.min(totalPages, p + 1));
                       window.scrollTo({ top: 0, behavior: 'smooth' });
                     }}
                     disabled={currentPage === totalPages || loading}
-                    className="px-4 py-2 bg-blue-600 text-white rounded disabled:bg-gray-300 disabled:cursor-not-allowed hover:bg-blue-700 transition-colors"
+                    className="px-4 py-2 bg-black text-white rounded disabled:bg-gray-300 disabled:cursor-not-allowed hover:bg-blue-700 transition-colors"
                   >
                     Next
                   </button>
