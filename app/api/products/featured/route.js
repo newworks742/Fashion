@@ -6,8 +6,11 @@ export async function GET() {
     const query = `
       SELECT * 
       FROM product
-      WHERE category = 'Men'  AND CAST(REPLACE(discount, '%', '') AS INT) >= 40
+      WHERE category = 'Men'  AND CAST(REPLACE(discount, '%', '') AS INT) >= 40 
+      AND image IS NOT NULL        -- image exists
+  AND image <> ''
       ORDER BY id DESC
+      
       LIMIT 4
     `;
     const result = await pool.query(query);
