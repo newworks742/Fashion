@@ -9,6 +9,7 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@iconify/react": "^6.0.2",
     "@prisma/client": "^7.0.1",
     "lightningcss": "^1.30.2",
     "lucide-react": "^0.555.0",
@@ -17,7 +18,8 @@
     "next": "16.0.4",
     "pg": "^8.16.3",
     "react": "19.2.0",
-    "react-dom": "19.2.0"
+    "react-dom": "19.2.0",
+    "react-toastify": "^11.0.5"
   },
   "devDependencies": {
     "@tailwindcss/forms": "^0.5.10",
