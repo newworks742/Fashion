@@ -1,12 +1,22 @@
-import Image from "next/image";
+//import Image from "next/image";//
 import Hero from "../components/Hero";
-// import DataDisplay from "../components/DataDisplay";
+import {CountdownBanner} from "../components/CountdownBanner"
+// import GenderCategories from "../components/GenderCategories";
+import {LatestDrops} from "../components/LatestDrops";
+
+
+
 
 export default function Home() {
   return (
-    <div className="flex  items-center justify-center bg-zinc-50 font-sans">
+    <div className="items-center justify-center bg-zinc-50 font-sans">
       <Hero />
-        {/* <DataDisplay /> */}
+
+        <CountdownBanner />
+     <LatestDrops />
+     
     </div>
+    
   );
+
 }
