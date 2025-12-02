@@ -11,7 +11,6 @@ export default function DataDisplay() {
   const [showFilters, setShowFilters] = useState(true);
   const itemsPerPage = 12;
 
-  // Filter states
   const [filters, setFilters] = useState({
     subcategory: [],
     type: [],
@@ -23,7 +22,6 @@ export default function DataDisplay() {
     sortBy: ''
   });
 
-  // Filter options states
   const [filterOptions, setFilterOptions] = useState({
     subcategory: [],
     types: [],
@@ -31,7 +29,6 @@ export default function DataDisplay() {
     sizes: []
   });
 
-  // Expanded sections state
   const [expandedSections, setExpandedSections] = useState({
     subcategory: true,
     type: true,
@@ -54,10 +51,7 @@ export default function DataDisplay() {
       const res = await fetch('/api/men/filters');
       if (res.ok) {
         const options = await res.json();
-        console.log('Filter options received:', options);
         setFilterOptions(options);
-      } else {
-        console.error('Failed to fetch filter options, status:', res.status);
       }
     } catch (err) {
       console.error('Failed to fetch filter options:', err);
@@ -89,6 +83,19 @@ export default function DataDisplay() {
       }
 
       const json = await res.json();
+
+      // Convert Buffer to base64
+      if (json.data && Array.isArray(json.data)) {
+        json.data = json.data.map(product => {
+          if (product.image && product.image.data && Array.isArray(product.image.data)) {
+            const base64 = btoa(
+              product.image.data.reduce((data, byte) => data + String.fromCharCode(byte), '')
+            );
+            return { ...product, image: base64 };
+          }
+          return product;
+        });
+      }
 
       if (json.error) {
         setError(json.error + ' - ' + (json.detail || ''));
@@ -160,7 +167,6 @@ export default function DataDisplay() {
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="flex gap-6 p-6">
-        {/* Filter Sidebar */}
         <div className={`${showFilters ? 'w-72' : 'w-0'} transition-all duration-300 overflow-hidden flex-shrink-0`}>
           <div className="bg-white rounded-lg shadow-md p-4 sticky top-6 max-h-[calc(100vh-3rem)] overflow-y-auto">
             <div className="flex justify-between items-center mb-4 pb-3 border-b sticky top-0 bg-white z-10">
@@ -174,17 +180,13 @@ export default function DataDisplay() {
                 )}
               </h3>
               {activeFilterCount > 0 && (
-                <button
-                  onClick={clearFilters}
-                  className="text-sm text-black hover:text-blue-800 font-medium"
-                >
+                <button onClick={clearFilters} className="text-sm text-black hover:text-blue-800 font-medium">
                   Clear All
                 </button>
               )}
             </div>
 
             <div className="space-y-4">
-              {/* Subcategory Filter */}
               {filterOptions.subcategory && filterOptions.subcategory.length > 0 && (
                 <div className="border-b pb-4">
                   <button
@@ -212,7 +214,6 @@ export default function DataDisplay() {
                 </div>
               )}
 
-              {/* Type Filter */}
               {filterOptions.types && filterOptions.types.length > 0 && (
                 <div className="border-b pb-4">
                   <button
@@ -240,7 +241,6 @@ export default function DataDisplay() {
                 </div>
               )}
 
-              {/* Price Range */}
               <div className="border-b pb-4">
                 <button
                   onClick={() => toggleSection('price')}
@@ -256,7 +256,7 @@ export default function DataDisplay() {
                       placeholder="Min Price"
                       value={filters.minPrice}
                       onChange={(e) => handleFilterChange('minPrice', e.target.value)}
-                      className="w-full px-3 py-2 border rounded text-sm focus:ring-0 focus:ring-black focus:border-black"
+                      className="w-full px-3 py-2 border rounded text-sm focus:ring-2 focus:ring-black focus:border-black"
                     />
                     <input
                       type="number"
@@ -269,7 +269,6 @@ export default function DataDisplay() {
                 )}
               </div>
 
-              {/* Rating Filter */}
               <div className="border-b pb-4">
                 <button
                   onClick={() => toggleSection('rating')}
@@ -311,15 +310,12 @@ export default function DataDisplay() {
           </div>
         </div>
 
-        {/* Main Content */}
         <div className="flex-1 min-w-0">
-          {/* Header */}
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
             <div className="flex items-center gap-4">
               <button
                 onClick={() => setShowFilters(!showFilters)}
                 className="p-2 bg-white rounded-lg shadow hover:shadow-md transition-shadow"
-                title={showFilters ? 'Hide Filters' : 'Show Filters'}
               >
                 <Filter size={20} className={showFilters ? 'text-black' : 'text-gray-600'} />
               </button>
@@ -346,7 +342,6 @@ export default function DataDisplay() {
             </div>
           </div>
 
-          {/* Error State */}
           {error && (
             <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
               <p className="text-red-600 font-semibold">Error</p>
@@ -354,20 +349,15 @@ export default function DataDisplay() {
             </div>
           )}
 
-          {/* No Results */}
           {!loading && data.length === 0 && !error && (
             <div className="text-center py-12">
               <p className="text-gray-600 text-lg mb-4">No products found matching your filters</p>
-              <button
-                onClick={clearFilters}
-                className="px-6 py-2 bg-black text-white rounded-lg hover:bg-blue-700"
-              >
+              <button onClick={clearFilters} className="px-6 py-2 bg-black text-white rounded-lg hover:bg-blue-700">
                 Clear Filters
               </button>
             </div>
           )}
 
-          {/* Products Grid */}
           {data.length > 0 && (
             <>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
@@ -377,8 +367,24 @@ export default function DataDisplay() {
                     onClick={() => window.location.href = `/men/${product.producturl}`}
                     className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-xl transition-shadow cursor-pointer"
                   >
-                    <div className="h-64 bg-gradient-to-br from-purple-200 to-orange-100 flex items-center justify-center">
-                      <span className="text-gray-400 text-sm">Product Image</span>
+                    <div className="h-64 bg-gray-100 flex items-center justify-center overflow-hidden relative">
+                      {product.image && product.image_mime ? (
+                        <img
+                          src={`data:${product.image_mime};base64,${product.image}`}
+                          alt={product.product_name}
+                          className="w-full h-full object-cover"
+                          onError={(e) => {
+                            e.target.style.display = 'none';
+                            e.target.nextElementSibling.style.display = 'flex';
+                          }}
+                        />
+                      ) : null}
+                      <div 
+                        className="absolute inset-0 bg-gradient-to-br from-purple-200 to-orange-100 flex items-center justify-center"
+                        style={{ display: product.image && product.image_mime ? 'none' : 'flex' }}
+                      >
+                        <span className="text-gray-400 text-sm">No Image</span>
+                      </div>
                     </div>
                     <div className="p-4">
                       <h3 className="font-semibold text-lg mb-2 line-clamp-2">{product.product_name}</h3>
@@ -408,7 +414,6 @@ export default function DataDisplay() {
                 ))}
               </div>
 
-              {/* Pagination */}
               {totalPages > 1 && (
                 <div className="flex justify-center items-center gap-2 mt-8">
                   <button
