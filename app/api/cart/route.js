@@ -9,6 +9,7 @@ export async function POST(request) {
     }
 
     const items = body.items.map((it) => ({
+      userid : it.userid ?? null,
       product_id: it.product_id ?? null,
       name: (it.name ?? '').toString().trim(),
       price: typeof it.price === 'number' ? it.price : parseFloat(it.price) || 0,
@@ -16,6 +17,7 @@ export async function POST(request) {
       size: it.size ?? null,
       color: it.color ?? null,
       qty: isFinite(it.qty) ? Number(it.qty) : 1
+    
     }));
 
     // Validate basic fields
@@ -29,7 +31,7 @@ export async function POST(request) {
     try {
       await client.query("BEGIN");
 
-      const cols = ["product_id", "name", "price", "category", "size", "color", "qty"];
+      const cols = ["userid","product_id", "name", "price", "category", "size", "color", "qty"];
 
       const values = [];
       const placeholders = items
@@ -37,6 +39,7 @@ export async function POST(request) {
           const start = i * cols.length + 1;
 
           values.push(
+            it.userid,
             it.product_id,
             it.name,
             it.price,
@@ -53,7 +56,7 @@ export async function POST(request) {
       const sql = `
         INSERT INTO cart (${cols.join(", ")})
         VALUES ${placeholders}
-        RETURNING id, product_id, name, price, qty
+        RETURNING userid , id, product_id, name, price, qty
       `;
 
       const result = await client.query(sql, values);

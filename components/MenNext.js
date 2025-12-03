@@ -1,17 +1,10 @@
 'use client';
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { Star, ShoppingCart, Heart, ArrowLeft, Package, Truck, Shield, Check } from 'lucide-react';
-
-/**
- * ProductDetail with toasts + login modal (client-only)
- * - Shows toast messages instead of alert()
- * - If API returns 401, opens login modal prompting user to login/register
- * - Self-contained Toast & LoginModal components
- */
+import { useSession } from 'next-auth/react';
+import { Star, ShoppingCart, Heart, ArrowLeft, Package, Truck, Shield } from 'lucide-react';
 
 function Toast({ toast, onClose }) {
-  // toast = { id, message, type } type: 'success'|'error'|'info'
   useEffect(() => {
     if (!toast) return;
     const t = setTimeout(() => onClose(toast.id), 3500);
@@ -63,6 +56,8 @@ function LoginModal({ open, onClose, onGotoLogin }) {
 export default function ProductDetail() {
   const params = useParams();
   const router = useRouter();
+  const { data: session, status } = useSession();
+  
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -70,11 +65,8 @@ export default function ProductDetail() {
   const [selectedColor, setSelectedColor] = useState('');
   const [addingToCart, setAddingToCart] = useState(false);
 
-  // toast state: simple queue of single toast
   const [toast, setToast] = useState(null);
   const [toastIdCounter, setToastIdCounter] = useState(1);
-
-  // login modal
   const [showLoginModal, setShowLoginModal] = useState(false);
 
   useEffect(() => {
@@ -103,7 +95,6 @@ export default function ProductDetail() {
       } else {
         let productData = json.product;
 
-        // Convert Buffer to base64 if image exists
         if (productData.image && productData.image.data && Array.isArray(productData.image.data)) {
           const base64 = btoa(
             productData.image.data.reduce((data, byte) => data + String.fromCharCode(byte), '')
@@ -130,12 +121,12 @@ export default function ProductDetail() {
     }
   };
 
-  // helper: show toast
   const pushToast = (message, type = 'info') => {
     const id = toastIdCounter;
     setToastIdCounter(id + 1);
     setToast({ id, message, type });
   };
+  
   const removeToast = (id) => {
     if (!toast) return;
     if (toast.id === id) setToast(null);
@@ -143,16 +134,30 @@ export default function ProductDetail() {
 
   const handleGotoLogin = () => {
     setShowLoginModal(false);
-    // navigate to login page - adjust route if different
     router.push('/login');
   };
 
   const handleAddToCart = async () => {
     if (!product) return;
+
+    // Check if user is authenticated using session
+    if (status === 'unauthenticated' || !session?.user) {
+      setShowLoginModal(true);
+      pushToast('Please login to add items to cart', 'error');
+      return;
+    }
+
+    // Check if session is still loading
+    if (status === 'loading') {
+      pushToast('Please wait...', 'info');
+      return;
+    }
+
     setAddingToCart(true);
 
     try {
       const cartData = {
+        // user_id: session.user.id || session.user.email, // Use user ID from session
         items: [
           {
             product_id: product.id ?? product.product_id ?? null,
@@ -161,22 +166,11 @@ export default function ProductDetail() {
             category: product.category ?? null,
             size: selectedSize || null,
             color: selectedColor || null,
-            qty: 1
+            qty: 1,
+            userid : session.user.id ||  session.user.email || null
           }
         ]
       };
-
-      // Quick client-side auth check: if you store auth cookie name 'auth' or 'token'
-      // This is optional—main check is server response (401)
-      const hasAuthCookie = document.cookie.split(';').some(c => c.trim().startsWith('auth=') || c.trim().startsWith('token='));
-
-      if (!hasAuthCookie) {
-        // show login modal politely instead of trying to call the API
-        setShowLoginModal(true);
-        pushToast('Please login to add items to cart', 'error');
-        setAddingToCart(false);
-        return;
-      }
 
       const res = await fetch('/api/cart', {
         method: 'POST',
@@ -187,14 +181,12 @@ export default function ProductDetail() {
       });
 
       if (res.status === 401) {
-        // server says unauthenticated
         setShowLoginModal(true);
-        pushToast('Please login to add items to cart', 'error');
+        pushToast('Session expired. Please login again', 'error');
         return;
       }
 
       if (!res.ok) {
-        // read error message if available
         let detail = '';
         try {
           const json = await res.json();
@@ -204,7 +196,6 @@ export default function ProductDetail() {
         return;
       }
 
-      // success
       pushToast('Product added to cart!', 'success');
     } catch (err) {
       console.error('Error adding to cart:', err);
@@ -277,12 +268,9 @@ export default function ProductDetail() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
-      {/* Toast */}
       <Toast toast={toast} onClose={removeToast} />
-      {/* Login modal */}
       <LoginModal open={showLoginModal} onClose={() => setShowLoginModal(false)} onGotoLogin={handleGotoLogin} />
 
-      {/* Header */}
       <div className="bg-white border-b sticky top-0 z-10 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 md:px-8 py-4">
           <button
@@ -297,7 +285,6 @@ export default function ProductDetail() {
 
       <div className="max-w-7xl mx-auto px-4 md:px-8 py-8 md:py-12">
         <div className="grid lg:grid-cols-2 gap-8 lg:gap-12">
-          {/* Left Column: Product Image */}
           <div className="space-y-6">
             <div className="bg-white rounded-2xl shadow-lg overflow-hidden sticky top-24">
               <div className="aspect-square bg-gray-100 flex items-center justify-center relative group overflow-hidden">
@@ -323,22 +310,18 @@ export default function ProductDetail() {
             </div>
           </div>
 
-          {/* Right Column: Product Info */}
           <div className="space-y-6">
-            {/* Breadcrumb */}
             <div className="text-sm text-gray-500">
               <span>{product.subcategory}</span>
               <span className="mx-2">•</span>
               <span>{product.type}</span>
             </div>
 
-            {/* Product Title */}
             <div>
               <h1 className="text-2xl font-bold text-gray-900 mb-4 leading-tight">
                 {product.product_name}
               </h1>
 
-              {/* Rating */}
               <div className="flex items-center gap-3">
                 <div className="flex items-center gap-1.5 bg-green-600 text-white px-3 py-1.5 rounded-lg font-semibold shadow-md">
                   <span>{product.rating}</span>
@@ -348,7 +331,6 @@ export default function ProductDetail() {
               </div>
             </div>
 
-            {/* Price */}
             <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl p-5 border border-green-100">
               <div className="flex items-baseline gap-3 flex-wrap">
                 <span className="text-xl font-bold text-gray-900">₹{product.discounted_price}</span>
@@ -366,7 +348,6 @@ export default function ProductDetail() {
               </p>
             </div>
 
-            {/* Color Selection */}
             {colorsArray.length > 0 && (
               <div className="bg-white rounded-xl p-5 shadow-sm border border-gray-200">
                 <p className="font-bold text-gray-900 mb-4">Select Color</p>
@@ -388,7 +369,6 @@ export default function ProductDetail() {
               </div>
             )}
 
-            {/* Size Selection */}
             {sizesArray.length > 0 && (
               <div className="bg-white rounded-xl p-5 shadow-sm border border-gray-200">
                 <p className="font-bold text-gray-900 mb-4">Select Size</p>
@@ -410,11 +390,10 @@ export default function ProductDetail() {
               </div>
             )}
 
-            {/* Action Buttons */}
             <div className="flex gap-3">
               <button
                 onClick={handleAddToCart}
-                disabled={addingToCart}
+                disabled={addingToCart || status === 'loading'}
                 className="flex-1 bg-black text-white py-4 px-6 rounded-xl font-bold text-lg hover:bg-gray-800 disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center justify-center gap-3 shadow-lg hover:shadow-xl transition-all transform hover:scale-[1.02] disabled:transform-none"
               >
                 {addingToCart ? (
@@ -434,7 +413,6 @@ export default function ProductDetail() {
               </button>
             </div>
 
-            {/* Features */}
             <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
               <div className="space-y-4">
                 <div className="flex items-center gap-4 text-gray-700">
@@ -467,7 +445,6 @@ export default function ProductDetail() {
               </div>
             </div>
 
-            {/* Product Details */}
             {productDetails && Object.keys(productDetails).length > 0 && (
               <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
                 <h3 className="text-xl font-bold text-gray-900 mb-5">Product Details</h3>
@@ -491,7 +468,6 @@ export default function ProductDetail() {
               </div>
             )}
 
-            {/* Product Description */}
             {product.description && (
               <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
                 <h3 className="text-xl font-bold text-gray-900 mb-4">Product Description</h3>

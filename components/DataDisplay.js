@@ -364,7 +364,7 @@ export default function DataDisplay() {
                                 {data.map((product, i) => (
                                     <div
                                         key={product.id || i}
-                                        onClick={() => window.location.href = `/men/${productucturl}`}
+                                        onClick={() => window.location.href = `/men/${product.producturl}`}
                                         className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-xl transition-shadow cursor-pointer"
                                     >
                                         <div className="h-64 bg-gray-100 flex items-center justify-center overflow-hidden relative">

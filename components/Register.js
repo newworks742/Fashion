@@ -5,33 +5,22 @@ import { Icon } from "@iconify/react";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
-// ✅ USE YOUR CONSTANTS
 import {
   countries,
   phoneNumberPatterns,
   countryCurrencyMap,
-} from "../lib/constants"; // <-- update path if needed
+} from "../lib/constants"; 
 
-export default function Register({ endpoint = "/api/register" }) {
-  // ---------------------------------------
-  // FORM FIELDS
-  // ---------------------------------------
+export default function Register({ endpoint = "/api/auth/register" }) {
   const [firstName, setFirstName] = useState("");
   const [email, setEmail] = useState("");
   const [country, setCountry] = useState("");
   const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
   const [passwordConfirm, setPasswordConfirm] = useState("");
-  const [companyName, setCompanyName] = useState("");
-  const [currency, setCurrency] = useState("");
-
-  // ---------------------------------------
-  // VALIDATION & UI STATE
-  // ---------------------------------------
   const [errors, setErrors] = useState({});
   const [isProcessing, setIsProcessing] = useState(false);
   const [showRedirectModal, setShowRedirectModal] = useState(false);
-
   const [searchTerm, setSearchTerm] = useState("");
   const [filteredCountries, setFilteredCountries] = useState(countries);
   const [showDropdown, setShowDropdown] = useState(false);
@@ -39,11 +28,6 @@ export default function Register({ endpoint = "/api/register" }) {
 
   const dropdownRef = useRef(null);
 
-  // ---------------------------------------
-  // VALIDATION HELPERS (RUNS IN REAL-TIME)
-  // ---------------------------------------
-
-  // 🔹 FIRST NAME
   const validateFirstName = (value) => {
     const newErrors = { ...errors };
 
@@ -55,7 +39,6 @@ export default function Register({ endpoint = "/api/register" }) {
     setErrors(newErrors);
   };
 
-  // 🔹 EMAIL
   const validateEmail = (value) => {
     const newErrors = { ...errors };
 
@@ -67,7 +50,6 @@ export default function Register({ endpoint = "/api/register" }) {
     setErrors(newErrors);
   };
 
-  // 🔹 PASSWORD
   const validatePassword = (value) => {
     const newErrors = { ...errors };
 
@@ -78,7 +60,6 @@ export default function Register({ endpoint = "/api/register" }) {
     setErrors(newErrors);
   };
 
-  // 🔹 CONFIRM PASSWORD
   const validateConfirmPassword = (value) => {
     const newErrors = { ...errors };
 
@@ -89,7 +70,6 @@ export default function Register({ endpoint = "/api/register" }) {
     setErrors(newErrors);
   };
 
-  // 🔹 PHONE VALIDATION
   const validatePhone = (value, selectedCountry) => {
     const newErrors = { ...errors };
 
@@ -104,9 +84,7 @@ export default function Register({ endpoint = "/api/register" }) {
     setErrors(newErrors);
   };
 
-  // ---------------------------------------
-  // COUNTRY DROPDOWN LOGIC
-  // ---------------------------------------
+
 
   const filterCountries = (term) => {
     const t = term.toLowerCase();
@@ -152,8 +130,6 @@ export default function Register({ endpoint = "/api/register" }) {
 
     filterCountries(value);
     setShowDropdown(true);
-
-    // realtime validation
     const newErrors = { ...errors };
     if (!countries.some((c) => c.name.toLowerCase() === value.toLowerCase()))
       newErrors.country = "Invalid country";
@@ -162,9 +138,6 @@ export default function Register({ endpoint = "/api/register" }) {
     setErrors(newErrors);
   };
 
-  // ---------------------------------------
-  // FORM SUBMIT
-  // ---------------------------------------
   const validateForm = () => {
     const missing = Object.keys(errors).length > 0;
 
@@ -211,15 +184,11 @@ export default function Register({ endpoint = "/api/register" }) {
     window.location.href = "/admin/dashboard";
   };
 
-  // ---------------------------------------
-  // RENDER UI
-  // ---------------------------------------
   return (
     <div className="max-w-3xl mx-auto p-6 bg-white shadow border border-gray-200 rounded-xl">
       <h2 className="text-2xl font-semibold text-black mb-6">Register</h2>
 
       <form onSubmit={handleSubmit} className="space-y-5">
-        {/* FIRST NAME */}
         <div>
           <label className="text-sm text-gray-700">First Name *</label>
           <input
@@ -236,7 +205,6 @@ export default function Register({ endpoint = "/api/register" }) {
           )}
         </div>
 
-        {/* EMAIL */}
         <div>
           <label className="text-sm text-gray-700">Email *</label>
           <input
@@ -253,9 +221,8 @@ export default function Register({ endpoint = "/api/register" }) {
           )}
         </div>
 
-        {/* COUNTRY + PHONE */}
+
         <div className="grid grid-cols-3 gap-3">
-          {/* COUNTRY */}
           <div className="col-span-2 relative">
             <label className="text-sm text-gray-700">Country *</label>
 
@@ -296,7 +263,6 @@ export default function Register({ endpoint = "/api/register" }) {
             )}
           </div>
 
-          {/* PHONE */}
           <div>
             <label className="text-sm text-gray-700">Phone *</label>
             <div className="flex">
@@ -319,8 +285,6 @@ export default function Register({ endpoint = "/api/register" }) {
             )}
           </div>
         </div>
-
-        {/* PASSWORD */}
         <div>
           <label className="text-sm text-gray-700">Password *</label>
           <input
@@ -337,8 +301,6 @@ export default function Register({ endpoint = "/api/register" }) {
             <p className="text-xs text-red-600">{errors.password}</p>
           )}
         </div>
-
-        {/* CONFIRM PASSWORD */}
         <div>
           <label className="text-sm text-gray-700">Confirm Password *</label>
           <input
@@ -356,7 +318,6 @@ export default function Register({ endpoint = "/api/register" }) {
           )}
         </div>
 
-        {/* SUBMIT */}
         <button
           type="submit"
           className="w-full bg-black text-white py-2 rounded-md hover:bg-gray-800"
@@ -368,7 +329,6 @@ export default function Register({ endpoint = "/api/register" }) {
 
       <ToastContainer position="bottom-right" />
 
-      {/* REDIRECT MODAL */}
       {showRedirectModal && (
         <div className="fixed inset-0 bg-black bg-opacity-40 flex justify-center items-center z-50">
           <div className="bg-white p-6 rounded-lg shadow max-w-sm w-full">

@@ -1,9 +1,49 @@
 'use client';
 import Link from 'next/link';
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
+import { signOut, useSession } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
+import {  ShoppingCart } from 'lucide-react';
 
 export default function Nav() {
     const [isOpen, setIsOpen] = useState(false);
+    const [dropdownOpen, setDropdownOpen] = useState(false);
+    const dropdownRef = useRef(null);
+    const router = useRouter();
+    
+    // Use useSession hook for real-time reactivity
+    const { data: session, status } = useSession();
+
+    // Close dropdown when clicking outside
+    useEffect(() => {
+        function handleClickOutside(event) {
+            if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+                setDropdownOpen(false);
+            }
+        }
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
+
+    const handleLogout = async () => {
+        setDropdownOpen(false);
+        
+        await signOut({ 
+            redirect: false,
+            callbackUrl: '/login'
+        });
+        
+        // Clear cookies and storage
+        document.cookie.split(";").forEach((c) => {
+            document.cookie = c
+                .replace(/^ +/, "")
+                .replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/");
+        });
+        sessionStorage.clear();
+        
+        router.push('/login');
+        router.refresh();
+    };
 
     return (
         <nav className="bg-black text-white">
@@ -36,26 +76,88 @@ export default function Nav() {
                         </Link>
                     </div>
 
-                    {/* Right Side - Cart, Login, Register */}
+                    {/* Right Side - Cart, Login, Register OR User Dropdown */}
                     <div className="hidden md:flex items-center space-x-8">
                         <Link
                             href="/cart"
-                            className="text-base font-light tracking-widehover:text-gray-100 hover:scale-110 transition"
-                        >
-                            Cart (0)
-                        </Link>
-                        <Link
-                            href="/login"
                             className="text-base font-light tracking-wide hover:text-gray-100 hover:scale-110 transition"
                         >
-                            Login
+                           <ShoppingCart size={22} />
                         </Link>
-                        <Link
-                            href="/register"
-                            className="border border-white px-6 py-2 text-sm font-light tracking-wider  hover:scale-110 hover:bg-white hover:text-black transition uppercase"
-                        >
-                            Register
-                        </Link>
+                        
+                        {status === 'loading' ? (
+                            <div className="text-base font-light tracking-wide animate-pulse">
+                                Loading...
+                            </div>
+                        ) : session?.user ? (
+                            // Logged in user dropdown
+                            <div className="relative" ref={dropdownRef}>
+                                <button
+                                    onClick={() => setDropdownOpen(!dropdownOpen)}
+                                    className="flex items-center space-x-2 text-base font-light tracking-wide hover:text-gray-100 transition"
+                                >
+                                    <span>Hi, {session.user.name || session.user.email}</span>
+                                    <svg 
+                                        className={`w-4 h-4 transition-transform ${dropdownOpen ? 'rotate-180' : ''}`}
+                                        fill="none" 
+                                        stroke="currentColor" 
+                                        viewBox="0 0 24 24"
+                                    >
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                                    </svg>
+                                </button>
+                                
+                                {/* Dropdown Menu */}
+                                {dropdownOpen && (
+                                    <div className="absolute right-0 mt-2 w-48 bg-white text-black rounded-md shadow-lg py-1 z-50">
+                                        <Link
+                                            href="/dashboard"
+                                            className="block px-4 py-2 text-sm hover:bg-gray-100 transition"
+                                            onClick={() => setDropdownOpen(false)}
+                                        >
+                                            Dashboard
+                                        </Link>
+                                        <Link
+                                            href="/profile"
+                                            className="block px-4 py-2 text-sm hover:bg-gray-100 transition"
+                                            onClick={() => setDropdownOpen(false)}
+                                        >
+                                            Profile
+                                        </Link>
+                                        <Link
+                                            href="/orders"
+                                            className="block px-4 py-2 text-sm hover:bg-gray-100 transition"
+                                            onClick={() => setDropdownOpen(false)}
+                                        >
+                                            Orders
+                                        </Link>
+                                        <hr className="my-1" />
+                                        <button
+                                            onClick={handleLogout}
+                                            className="block w-full text-left px-4 py-2 text-sm hover:bg-gray-100 transition text-red-600"
+                                        >
+                                            Logout
+                                        </button>
+                                    </div>
+                                )}
+                            </div>
+                        ) : (
+                            // Guest user menu
+                            <>
+                                <Link
+                                    href="/login"
+                                    className="text-base font-light tracking-wide hover:text-gray-100 hover:scale-110 transition"
+                                >
+                                    Login
+                                </Link>
+                                <Link
+                                    href="/register"
+                                    className="border border-white px-6 py-2 text-sm font-light tracking-wider hover:scale-110 hover:bg-white hover:text-black transition uppercase"
+                                >
+                                    Register
+                                </Link>
+                            </>
+                        )}
                     </div>
 
                     {/* Mobile menu button */}
@@ -105,20 +207,67 @@ export default function Nav() {
                             >
                                 Cart (0)
                             </Link>
-                            <Link
-                                href="/login"
-                                className="block text-base font-light tracking-wide hover:text-gray-300 transition"
-                                onClick={() => setIsOpen(false)}
-                            >
-                                Login
-                            </Link>
-                            <Link
-                                href="/register"
-                                className="block border border-white px-6 py-2 text-sm font-light tracking-wider hover:bg-white hover:text-black transition uppercase text-center"
-                                onClick={() => setIsOpen(false)}
-                            >
-                                Register
-                            </Link>
+                            
+                            {status === 'loading' ? (
+                                <div className="block text-base font-light tracking-wide text-gray-300 animate-pulse">
+                                    Loading...
+                                </div>
+                            ) : session?.user ? (
+                                // Mobile logged in menu
+                                <>
+                                    <div className="block text-base font-light tracking-wide text-gray-300">
+                                        Hi, {session.user.name || session.user.email}
+                                    </div>
+                                    <Link
+                                        href="/dashboard"
+                                        className="block text-base font-light tracking-wide hover:text-gray-300 transition"
+                                        onClick={() => setIsOpen(false)}
+                                    >
+                                        Dashboard
+                                    </Link>
+                                    <Link
+                                        href="/profile"
+                                        className="block text-base font-light tracking-wide hover:text-gray-300 transition"
+                                        onClick={() => setIsOpen(false)}
+                                    >
+                                        Profile
+                                    </Link>
+                                    <Link
+                                        href="/orders"
+                                        className="block text-base font-light tracking-wide hover:text-gray-300 transition"
+                                        onClick={() => setIsOpen(false)}
+                                    >
+                                        Orders
+                                    </Link>
+                                    <button
+                                        onClick={() => {
+                                            setIsOpen(false);
+                                            handleLogout();
+                                        }}
+                                        className="block w-full border border-white px-6 py-2 text-sm font-light tracking-wider hover:bg-white hover:text-black transition uppercase text-center"
+                                    >
+                                        Logout
+                                    </button>
+                                </>
+                            ) : (
+                                // Mobile guest menu
+                                <>
+                                    <Link
+                                        href="/login"
+                                        className="block text-base font-light tracking-wide hover:text-gray-300 transition"
+                                        onClick={() => setIsOpen(false)}
+                                    >
+                                        Login
+                                    </Link>
+                                    <Link
+                                        href="/register"
+                                        className="block border border-white px-6 py-2 text-sm font-light tracking-wider hover:bg-white hover:text-black transition uppercase text-center"
+                                        onClick={() => setIsOpen(false)}
+                                    >
+                                        Register
+                                    </Link>
+                                </>
+                            )}
                         </div>
                     </div>
                 )}
