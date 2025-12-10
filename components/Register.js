@@ -115,7 +115,7 @@ export default function Register({ endpoint = "/api/auth/register" }) {
   const selectCountry = (c) => {
     setCountry(c.name);
     setSearchTerm(c.name);
-    setCurrency(countryCurrencyMap[c.name] || "");
+    // setCurrency(countryCurrencyMap[c.name] || "");
     setShowDropdown(false);
 
     const newErrors = { ...errors };

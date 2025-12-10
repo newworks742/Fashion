@@ -7,6 +7,9 @@ export async function POST(req) {
     const body = await req.json();
     const { email, password, firstName, phone, country } = body;
 
+    console.log(body,"bodugfggfv");
+    
+
     if (!email || !password) {
       return new Response(JSON.stringify({ error: "Email and password required" }), { status: 400 });
     }
