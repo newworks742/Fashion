@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import { Star, ShoppingCart, Heart, ArrowLeft, Package, Truck, Shield } from 'lucide-react';
-
+import { useCart } from '@/app/providers';
 function Toast({ toast, onClose }) {
   useEffect(() => {
     if (!toast) return;
@@ -57,7 +57,7 @@ export default function ProductDetail() {
   const params = useParams();
   const router = useRouter();
   const { data: session, status } = useSession();
-  
+
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -68,7 +68,7 @@ export default function ProductDetail() {
   const [toast, setToast] = useState(null);
   const [toastIdCounter, setToastIdCounter] = useState(1);
   const [showLoginModal, setShowLoginModal] = useState(false);
-
+  const { refreshCartCount } = useCart();
   useEffect(() => {
     if (params.producturl) {
       fetchProduct();
@@ -126,7 +126,7 @@ export default function ProductDetail() {
     setToastIdCounter(id + 1);
     setToast({ id, message, type });
   };
-  
+
   const removeToast = (id) => {
     if (!toast) return;
     if (toast.id === id) setToast(null);
@@ -167,7 +167,7 @@ export default function ProductDetail() {
             size: selectedSize || null,
             color: selectedColor || null,
             qty: 1,
-            userid : session.user.id ||  session.user.email || null
+            userid: session.user.id || session.user.email || null
           }
         ]
       };
@@ -191,12 +191,13 @@ export default function ProductDetail() {
         try {
           const json = await res.json();
           detail = json?.error || json?.detail || '';
-        } catch (e) {}
+        } catch (e) { }
         pushToast(`Failed to add to cart${detail ? ': ' + detail : ''}`, 'error');
         return;
       }
 
       pushToast('Product added to cart!', 'success');
+       refreshCartCount();
     } catch (err) {
       console.error('Error adding to cart:', err);
       pushToast('Failed to add product. Please try again.', 'error');
@@ -356,11 +357,10 @@ export default function ProductDetail() {
                     <button
                       key={color}
                       onClick={() => setSelectedColor(color)}
-                      className={`px-4 py-2 rounded-lg font-medium transition-all transform hover:scale-105 ${
-                        selectedColor === color
+                      className={`px-4 py-2 rounded-lg font-medium transition-all transform hover:scale-105 ${selectedColor === color
                           ? 'bg-black text-white shadow-lg'
                           : 'bg-gray-100 text-gray-700 hover:bg-gray-200 border border-gray-300'
-                      }`}
+                        }`}
                     >
                       {color}
                     </button>
@@ -377,11 +377,10 @@ export default function ProductDetail() {
                     <button
                       key={size}
                       onClick={() => setSelectedSize(size)}
-                      className={`px-4 py-2 rounded-lg font-medium transition-all transform hover:scale-105 min-w-[60px] ${
-                        selectedSize === size
+                      className={`px-4 py-2 rounded-lg font-medium transition-all transform hover:scale-105 min-w-[60px] ${selectedSize === size
                           ? 'bg-black text-white shadow-lg'
                           : 'bg-gray-100 text-gray-700 hover:bg-gray-200 border border-gray-300'
-                      }`}
+                        }`}
                     >
                       {size}
                     </button>
@@ -408,9 +407,7 @@ export default function ProductDetail() {
                   </>
                 )}
               </button>
-              <button className="bg-white border-2 border-gray-300 p-4 rounded-xl hover:bg-gray-50 transition-all hover:border-red-500 group">
-                <Heart size={22} className="text-gray-600 group-hover:text-red-500 group-hover:fill-red-500 transition-all" />
-              </button>
+
             </div>
 
             <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200">

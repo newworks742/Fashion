@@ -21,7 +21,7 @@ export function LatestDrops() {
       }
       
       const data = await res.json();
-      console.log('API Response:', data); // Debug log
+      // console.log('API Response:', data); // Debug log
       
       // Handle different response structures
       let productsData = data.products || data.data || data;
