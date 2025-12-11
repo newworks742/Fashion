@@ -3,7 +3,8 @@ import Link from 'next/link';
 import { useState, useEffect, useRef } from 'react';
 import { signOut, useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
-import {  ShoppingCart } from 'lucide-react';
+import { ShoppingCart } from 'lucide-react';
+import { useCart } from '@/app/providers';
 
 export default function Nav() {
     const [isOpen, setIsOpen] = useState(false);
@@ -13,6 +14,9 @@ export default function Nav() {
     
     // Use useSession hook for real-time reactivity
     const { data: session, status } = useSession();
+    
+    // Get cart count from context
+    const { cartCount } = useCart();
 
     // Close dropdown when clicking outside
     useEffect(() => {
@@ -46,7 +50,9 @@ export default function Nav() {
     };
 
     return (
+        
         <nav className="bg-black text-white">
+             <div>Cart ({cartCount})</div>
             <div className="max-w-7xl mx-auto px-6 lg:px-8">
                 <div className="flex justify-between items-center h-20">
                     {/* Logo */}
@@ -80,9 +86,14 @@ export default function Nav() {
                     <div className="hidden md:flex items-center space-x-8">
                         <Link
                             href="/cart"
-                            className="text-base font-light tracking-wide hover:text-gray-100 hover:scale-110 transition"
+                            className="relative text-base font-light tracking-wide hover:text-gray-100 hover:scale-110 transition"
                         >
-                           <ShoppingCart size={22} />
+                            <ShoppingCart size={22} />
+                            {cartCount > 0 && (
+                                <span className="absolute -top-2 -right-2 bg-red-600 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-medium">
+                                    {cartCount}
+                                </span>
+                            )}
                         </Link>
                         
                         {status === 'loading' ? (
@@ -116,13 +127,6 @@ export default function Nav() {
                                             onClick={() => setDropdownOpen(false)}
                                         >
                                             Dashboard
-                                        </Link>
-                                        <Link
-                                            href="/profile"
-                                            className="block px-4 py-2 text-sm hover:bg-gray-100 transition"
-                                            onClick={() => setDropdownOpen(false)}
-                                        >
-                                            Profile
                                         </Link>
                                         <Link
                                             href="/orders"
@@ -205,7 +209,7 @@ export default function Nav() {
                                 className="block text-base font-light tracking-wide hover:text-gray-300 transition"
                                 onClick={() => setIsOpen(false)}
                             >
-                                Cart (0)
+                                Cart ({cartCount})
                             </Link>
                             
                             {status === 'loading' ? (
