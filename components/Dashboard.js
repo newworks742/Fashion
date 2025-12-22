@@ -57,10 +57,10 @@ export default function FashionDashboard() {
     if (!session?.user?.id) return;
     try {
       setLoading(true);
-      const userId = session.user.id;
+      const id = session.user.id;
       
       // Profile
-      const profileRes = await fetch(`/api/register?type=profile&userId=${userId}`);
+      const profileRes = await fetch(`/api/register?type=profile&id=${id}`);
       const profileData = await profileRes.json();
       if (profileRes.ok) {
         setProfileForm({
@@ -73,12 +73,12 @@ export default function FashionDashboard() {
       }
       
       // Addresses
-      const addressRes = await fetch(`/api/register?type=addresses&userId=${userId}`);
+      const addressRes = await fetch(`/api/register?type=addresses&id=${id}`);
       const addressData = await addressRes.json();
       setAddresses(Array.isArray(addressData) ? addressData : []);
       
       // Orders
-      const ordersRes = await fetch(`/api/register?type=orders&userId=${userId}`);
+      const ordersRes = await fetch(`/api/register?type=orders&id=${id}`);
       const ordersData = await ordersRes.json();
       setOrders(Array.isArray(ordersData) ? ordersData : []);
     } catch (error) {
@@ -263,7 +263,7 @@ export default function FashionDashboard() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           type: 'profile',
-          userId: session.user.id,
+          id: session.user.id,
           first_name: profileForm.name,
           phone: profileForm.phone,
           country: profileForm.phoneCountry
@@ -313,7 +313,7 @@ export default function FashionDashboard() {
       const method = editingAddress ? 'PUT' : 'POST';
       const body = {
         type: 'addresses',
-        userId: session.user.id,
+        id: session.user.id,
         ...addressForm
       };
 
@@ -349,7 +349,7 @@ export default function FashionDashboard() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           type: 'addresses',
-          userId: session.user.id,
+      id: session.user.id,
           addressId
         })
       });
@@ -372,7 +372,7 @@ export default function FashionDashboard() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           type: 'addresses',
-          userId: session.user.id,
+          id: session.user.id,
           addressId,
           isDefault: true
         })

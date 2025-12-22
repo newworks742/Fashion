@@ -10,13 +10,13 @@ export async function GET(request) {
       return Response.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const userId = session.user.id || session.user.email;
+    const id = session.user.id || session.user.email;
     const client = await pool.connect();
     
     try {
       const result = await client.query(
-        'SELECT * FROM addresses WHERE userid = $1 ORDER BY isdefault DESC, id DESC LIMIT 2',
-        [userId]
+        'SELECT * FROM addresses WHERE id = $1 ORDER BY isdefault DESC, id DESC LIMIT 2',
+        [id]
       );
       
       return Response.json(result.rows, { status: 200 });
@@ -39,7 +39,7 @@ export async function POST(request) {
       return Response.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const userId = session.user.id || session.user.email;
+    const id = session.user.id || session.user.email;
     const { type, street, city, state, zip, country, isDefault } = await request.json();
 
     const client = await pool.connect();
@@ -47,8 +47,8 @@ export async function POST(request) {
     try {
       // Check if user already has 2 addresses
       const countResult = await client.query(
-        'SELECT COUNT(*) FROM addresses WHERE userid = $1',
-        [userId]
+        'SELECT COUNT(*) FROM addresses WHERE id = $1',
+        [id]
       );
       
       if (parseInt(countResult.rows[0].count) >= 2) {
@@ -58,14 +58,14 @@ export async function POST(request) {
       // If this is set as default, unset other defaults
       if (isDefault) {
         await client.query(
-          'UPDATE addresses SET isdefault = false WHERE userid = $1',
-          [userId]
+          'UPDATE addresses SET isdefault = false WHERE id = $1',
+          [id]
         );
       }
 
       const result = await client.query(
-        'INSERT INTO addresses (userid, type, street, city, state, zip, country, isdefault) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *',
-        [userId, type, street, city, state, zip, country || 'USA', isDefault]
+        'INSERT INTO addresses (id, type, street, city, state, zip, country, isdefault) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *',
+        [id, type, street, city, state, zip, country || 'USA', isDefault]
       );
       
       return Response.json(result.rows[0], { status: 201 });
