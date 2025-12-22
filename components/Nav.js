@@ -50,9 +50,8 @@ export default function Nav() {
     };
 
     return (
-        
         <nav className="bg-black text-white">
-             <div>Cart ({cartCount})</div>
+        
             <div className="max-w-7xl mx-auto px-6 lg:px-8">
                 <div className="flex justify-between items-center h-20">
                     {/* Logo */}
