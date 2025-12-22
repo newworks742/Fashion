@@ -254,16 +254,15 @@ export async function GET(req) {
     }
 
     // -------- GET ADDRESSES --------
-    if (type === "addresses") {
-      const r = await pool.query(
-        "SELECT * FROM addresses WHERE userId=$1",
-        [userId]
-      );
-      
-       console.log(r,"rrrrrrrr");
-      // return new Response(JSON.stringify(r.rows[0]));
-     
-    }
+   if (type === "addresses") {
+  const r = await pool.query(
+    `SELECT * FROM addresses WHERE "userId" = $1 ORDER BY "is_default" DESC`,
+    [userId]
+  );
+  console.log("Addresses fetched:", r.rows);
+  return new Response(JSON.stringify(r.rows), { status: 200 });
+}
+
 
     // -------- GET ORDERS --------
     // if (type === "orders") {

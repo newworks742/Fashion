@@ -563,7 +563,7 @@ export default function FashionDashboard() {
               ) : (
                 <div className="grid md:grid-cols-2 gap-4">
                   {addresses.map(address => (
-                    <div key={address.id} className="border border-gray-200 p-6 relative hover:border-black transition-colors">
+                    <div key={address.userId} className="border border-gray-200 p-6 relative hover:border-black transition-colors">
                       {address.is_default && (
                         <div className="absolute top-4 right-4">
                           <span className="px-3 py-1 bg-black text-white text-xs font-medium uppercase tracking-wide flex items-center gap-1">
@@ -588,7 +588,7 @@ export default function FashionDashboard() {
                         <button onClick={() => openEditAddress(address)} className="flex-1 py-2 text-xs font-medium uppercase tracking-wide border border-gray-300 hover:border-black">
                           Edit
                         </button>
-                        <button onClick={() => deleteAddress(address.id)} className="flex-1 py-2 text-xs font-medium uppercase tracking-wide border border-gray-300 hover:border-red-600 hover:text-red-600">
+                        <button onClick={() => deleteAddress(address.userId)} className="flex-1 py-2 text-xs font-medium uppercase tracking-wide border border-gray-300 hover:border-red-600 hover:text-red-600">
                           Delete
                         </button>
                       </div>
