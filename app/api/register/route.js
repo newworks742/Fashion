@@ -235,8 +235,14 @@ if (action === "default") {
 export async function GET(req) {
   try {
     const { searchParams } = new URL(req.url);
-    const id = searchParams.get("id");
+    const id = searchParams.get("userId");
+    const userId = id;
+    console.log(userId,"i am userIs");
+    
+     console.log(id,"idididididid")
     const type = searchParams.get("type");
+     console.log(type,"thnjjzhfgkjhgfkjs")
+   
 
     // -------- GET PROFILE --------
     if (type === 'profile') {
@@ -250,20 +256,23 @@ export async function GET(req) {
     // -------- GET ADDRESSES --------
     if (type === "addresses") {
       const r = await pool.query(
-        "SELECT * FROM addresses WHERE user_id=$1 ORDER BY is_default DESC",
-        [id]
+        "SELECT * FROM addresses WHERE userId=$1",
+        [userId]
       );
-      return new Response(JSON.stringify(r.rows));
+      
+       console.log(r,"rrrrrrrr");
+      // return new Response(JSON.stringify(r.rows[0]));
+     
     }
 
     // -------- GET ORDERS --------
-    if (type === "orders") {
-      const r = await pool.query(
-        "SELECT * FROM orders WHERE user_id=$1 ORDER BY created_at DESC",
-        [id]
-      );
-      return new Response(JSON.stringify(r.rows));
-    }
+    // if (type === "orders") {
+    //   const r = await pool.query(
+    //     "SELECT * FROM orders WHERE user_id=$1 ORDER BY created_at DESC",
+    //     [id]
+    //   );
+    //   return new Response(JSON.stringify(r.rows));
+    // }
 
     return new Response(JSON.stringify({ error: "Invalid request" }), { status: 400 });
   } catch (err) {
