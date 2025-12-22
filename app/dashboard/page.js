@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { User, Package, MapPin, Edit, Plus, Trash2, Loader2, X, Check } from 'lucide-react';
+import { countries, phoneNumberPatterns } from '@/lib/constants';
 
 export default function FashionDashboard() {
   const { data: session, status } = useSession();
@@ -23,13 +24,23 @@ export default function FashionDashboard() {
   const [profileForm, setProfileForm] = useState({ name: '', email: '', phone: '' });
   const [addressForm, setAddressForm] = useState({
     type: 'Home',
-    street: '',
+    fullName: '',
+    mobile: '',
+    flatNo: '',
+    area: '',
+    landmark: '',
+    pincode: '',
     city: '',
     state: '',
-    zip: '',
-    country: 'USA',
+    country: 'India',
     isDefault: false
   });
+
+  // Country search states
+  const [countrySearchTerm, setCountrySearchTerm] = useState('India');
+  const [showCountryDropdown, setShowCountryDropdown] = useState(false);
+  const [filteredCountries, setFilteredCountries] = useState([]);
+  const [phoneError, setPhoneError] = useState('');
 
   // Redirect if unauthenticated
   useEffect(() => {
@@ -72,6 +83,17 @@ export default function FashionDashboard() {
   useEffect(() => {
     if (session?.user) fetchUserData();
   }, [session]);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (showCountryDropdown && !event.target.closest('.country-dropdown-container')) {
+        setShowCountryDropdown(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [showCountryDropdown]);
 
   // ---------- PROFILE SUBMIT ----------
   const handleProfileSubmit = async (e) => {
@@ -153,22 +175,75 @@ export default function FashionDashboard() {
 
   const openEditAddress = (address) => {
     setEditingAddress(address);
+    const addressCountry = address.country || 'India';
     setAddressForm({
       type: address.type || 'Home',
-      street: address.street || '',
+      fullName: address.full_name || address.fullName || '',
+      mobile: address.mobile || '',
+      flatNo: address.flat_no || address.flatNo || '',
+      area: address.area || '',
+      landmark: address.landmark || '',
+      pincode: address.pincode || address.zip || '',
       city: address.city || '',
       state: address.state || '',
-      zip: address.zip || '',
-      country: address.country || 'USA',
+      country: addressCountry,
       isDefault: address.is_default || false
     });
+    setCountrySearchTerm(addressCountry);
     setShowAddressModal(true);
   };
 
   const closeAddressModal = () => {
     setShowAddressModal(false);
     setEditingAddress(null);
-    setAddressForm({ type: 'Home', street: '', city: '', state: '', zip: '', country: 'USA', isDefault: false });
+    setAddressForm({ type: 'Home', fullName: '', mobile: '', flatNo: '', area: '', landmark: '', pincode: '', city: '', state: '', country: 'India', isDefault: false });
+    setCountrySearchTerm('India');
+    setPhoneError('');
+  };
+
+  const filterCountries = (term) => {
+    const t = term.toLowerCase();
+    const starts = countries.filter((c) => c.name.toLowerCase().startsWith(t));
+    const contains = countries.filter(
+      (c) => !c.name.toLowerCase().startsWith(t) && c.name.toLowerCase().includes(t)
+    );
+    const combined = [...starts, ...contains];
+    const codeMatches = countries.filter((c) => c.code.replace('+', '').includes(t.replace('+', '')));
+    codeMatches.forEach((c) => {
+      if (!combined.some((x) => x.name === c.name)) combined.push(c);
+    });
+    setFilteredCountries(combined);
+  };
+
+  const selectCountry = (c) => {
+    setAddressForm({...addressForm, country: c.name, mobile: ''});
+    setCountrySearchTerm(c.name);
+    setShowCountryDropdown(false);
+    setPhoneError('');
+  };
+
+  const handleCountryInput = (value) => {
+    setCountrySearchTerm(value);
+    setAddressForm({...addressForm, country: value});
+    filterCountries(value);
+    setShowCountryDropdown(true);
+  };
+
+  const validatePhone = (value, selectedCountry) => {
+    if (!value) {
+      setPhoneError('Required');
+      return false;
+    }
+    
+    const regex = phoneNumberPatterns[selectedCountry] || /^[0-9]+$/;
+    
+    if (!regex.test(value)) {
+      setPhoneError(`Invalid phone for ${selectedCountry}`);
+      return false;
+    }
+    
+    setPhoneError('');
+    return true;
   };
 
   if (status === 'loading' || loading) {
@@ -320,9 +395,13 @@ export default function FashionDashboard() {
                       <div className="mb-4">
                         <h4 className="font-bold text-black uppercase tracking-wide text-sm mb-3">{address.type}</h4>
                         <div className="space-y-1 text-sm text-gray-600">
-                          <p>{address.street}</p>
-                          <p>{address.city}, {address.state} {address.zip}</p>
-                          <p>{address.country || 'USA'}</p>
+                          <p className="font-medium text-black">{address.full_name || address.fullName}</p>
+                          {address.mobile && <p>{address.mobile}</p>}
+                          <p>{address.flat_no || address.flatNo}</p>
+                          <p>{address.area}</p>
+                          {address.landmark && <p className="text-gray-500">Landmark: {address.landmark}</p>}
+                          <p>{address.city}, {address.state} - {address.pincode || address.zip}</p>
+                          <p>{address.country || 'India'}</p>
                         </div>
                       </div>
                       <div className="flex gap-2 pt-4 border-t border-gray-100">
@@ -358,7 +437,7 @@ export default function FashionDashboard() {
               <h3 className="text-xl font-bold text-black">Edit Profile</h3>
               <button onClick={() => setShowProfileModal(false)} className="text-gray-400 hover:text-black"><X size={24} /></button>
             </div>
-            <form onSubmit={handleProfileSubmit} className="p-6 space-y-6">
+            <div className="p-6 space-y-6">
               <div>
                 <label className="block text-xs font-medium text-gray-500 uppercase mb-2">Full Name</label>
                 <input type="text" value={profileForm.name} onChange={e => setProfileForm({...profileForm, name: e.target.value})} className="w-full px-4 py-3 border border-gray-300 focus:border-black focus:outline-none" required />
@@ -373,9 +452,9 @@ export default function FashionDashboard() {
               </div>
               <div className="flex gap-3 pt-4">
                 <button type="button" onClick={() => setShowProfileModal(false)} className="flex-1 px-6 py-3 border border-gray-300 hover:border-black uppercase font-medium text-sm">Cancel</button>
-                <button type="submit" className="flex-1 px-6 py-3 bg-black text-white hover:bg-gray-800 uppercase font-medium text-sm">Save Changes</button>
+                <button onClick={handleProfileSubmit} className="flex-1 px-6 py-3 bg-black text-white hover:bg-gray-800 uppercase font-medium text-sm">Save Changes</button>
               </div>
-            </form>
+            </div>
           </div>
         </div>
       )}
@@ -388,48 +467,129 @@ export default function FashionDashboard() {
               <h3 className="text-xl font-bold text-black">{editingAddress ? 'Edit Address' : 'Add New Address'}</h3>
               <button onClick={closeAddressModal} className="text-gray-400 hover:text-black"><X size={24} /></button>
             </div>
-            <form onSubmit={handleAddressSubmit} className="p-6 space-y-6">
-              <div>
-                <label className="block text-xs font-medium text-gray-500 uppercase mb-2">Address Type</label>
-                <select value={addressForm.type} onChange={e => setAddressForm({...addressForm, type: e.target.value})} className="w-full px-4 py-3 border border-gray-300 focus:border-black focus:outline-none">
-                  <option>Home</option>
-                  <option>Office</option>
-                  <option>Other</option>
-                </select>
+            <div className="p-6 space-y-6">
+              <div className="grid grid-cols-3 gap-3">
+                <div className="col-span-2 relative country-dropdown-container">
+                  <label className="block text-xs font-medium text-gray-500 uppercase mb-2">Country *</label>
+                  <input
+                    type="text"
+                    value={countrySearchTerm}
+                    onChange={(e) => handleCountryInput(e.target.value)}
+                    onFocus={() => {
+                      filterCountries(countrySearchTerm);
+                      setShowCountryDropdown(true);
+                    }}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:border-black focus:outline-none"
+                    placeholder="Search country"
+                  />
+                  {showCountryDropdown && (
+                    <ul className="absolute w-full bg-white border border-gray-300 rounded-md mt-1 z-20 max-h-48 overflow-auto shadow-lg">
+                      {filteredCountries.length === 0 && (
+                        <li className="px-3 py-2 text-gray-500">No countries found</li>
+                      )}
+                      {filteredCountries.map((c) => (
+                        <li
+                          key={c.name}
+                          className="px-3 py-2 hover:bg-gray-100 cursor-pointer flex justify-between"
+                          onMouseDown={(e) => {
+                            e.preventDefault();
+                            selectCountry(c);
+                          }}
+                        >
+                          {c.name}
+                          <span className="text-xs text-gray-500">{c.code}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
+
+                <div>
+                  <label className="block text-xs font-medium text-gray-500 uppercase mb-2">Phone *</label>
+                  <div className="flex">
+                    <span className="px-3 py-2 bg-gray-100 border border-gray-300 rounded-l-md text-sm text-gray-700">
+                      {countries.find((c) => c.name === addressForm.country)?.code || '+..'}
+                    </span>
+                    <input 
+                      type="tel" 
+                      value={addressForm.mobile} 
+                      onChange={(e) => {
+                        const value = e.target.value.replace(/\s+/g, '');
+                        setAddressForm({...addressForm, mobile: value});
+                        validatePhone(value, addressForm.country);
+                      }}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-r-md focus:border-black focus:outline-none" 
+                      placeholder="Phone" 
+                      required 
+                    />
+                  </div>
+
+                  {phoneError && (
+                    <p className="text-xs text-red-600">{phoneError}</p>
+                  )}
+                </div>
               </div>
+              
+              <p className="text-xs text-gray-500 -mt-3">May be used to assist delivery</p>
+              
               <div>
-                <label className="block text-xs font-medium text-gray-500 uppercase mb-2">Street Address</label>
-                <input type="text" value={addressForm.street} onChange={e => setAddressForm({...addressForm, street: e.target.value})} className="w-full px-4 py-3 border border-gray-300 focus:border-black focus:outline-none" required />
+                <label className="block text-xs font-medium text-gray-500 uppercase mb-2">Full name (First and Last name)</label>
+                <input type="text" value={addressForm.fullName} onChange={e => setAddressForm({...addressForm, fullName: e.target.value})} className="w-full px-4 py-3 border border-gray-300 focus:border-black focus:outline-none" required />
               </div>
+
+              <div>
+                <label className="block text-xs font-medium text-gray-500 uppercase mb-2">Flat, House no., Building, Company, Apartment</label>
+                <input type="text" value={addressForm.flatNo} onChange={e => setAddressForm({...addressForm, flatNo: e.target.value})} className="w-full px-4 py-3 border border-gray-300 focus:border-black focus:outline-none" required />
+              </div>
+
+              <div>
+                <label className="block text-xs font-medium text-gray-500 uppercase mb-2">Area, Street, Sector, Village</label>
+                <input type="text" value={addressForm.area} onChange={e => setAddressForm({...addressForm, area: e.target.value})} className="w-full px-4 py-3 border border-gray-300 focus:border-black focus:outline-none" required />
+              </div>
+
+              <div>
+                <label className="block text-xs font-medium text-gray-500 uppercase mb-2">Landmark</label>
+                <input type="text" value={addressForm.landmark} onChange={e => setAddressForm({...addressForm, landmark: e.target.value})} className="w-full px-4 py-3 border border-gray-300 focus:border-black focus:outline-none" placeholder="E.g. near apollo hospital" />
+              </div>
+
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-medium text-gray-500 uppercase mb-2">City</label>
+                  <label className="block text-xs font-medium text-gray-500 uppercase mb-2">Pincode</label>
+                  <input type="text" value={addressForm.pincode} onChange={e => setAddressForm({...addressForm, pincode: e.target.value})} className="w-full px-4 py-3 border border-gray-300 focus:border-black focus:outline-none" placeholder="6-digit Pincode" maxLength="6" required />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-gray-500 uppercase mb-2">Town/City</label>
                   <input type="text" value={addressForm.city} onChange={e => setAddressForm({...addressForm, city: e.target.value})} className="w-full px-4 py-3 border border-gray-300 focus:border-black focus:outline-none" required />
                 </div>
-                <div>
-                  <label className="block text-xs font-medium text-gray-500 uppercase mb-2">State</label>
-                  <input type="text" value={addressForm.state} onChange={e => setAddressForm({...addressForm, state: e.target.value})} className="w-full px-4 py-3 border border-gray-300 focus:border-black focus:outline-none" required />
+              </div>
+
+              <div>
+                <label className="block text-xs font-medium text-gray-500 uppercase mb-2">State</label>
+                <input type="text" value={addressForm.state} onChange={e => setAddressForm({...addressForm, state: e.target.value})} className="w-full px-4 py-3 border border-gray-300 focus:border-black focus:outline-none" placeholder="Enter state" required />
+              </div>
+
+              <div>
+                <label className="block text-xs font-medium text-gray-500 uppercase mb-2">Address Type</label>
+                <div className="flex gap-4">
+                  {['Home', 'Office', 'Other'].map(type => (
+                    <label key={type} className="flex items-center gap-2 cursor-pointer">
+                      <input type="radio" name="addressType" value={type} checked={addressForm.type === type} onChange={e => setAddressForm({...addressForm, type: e.target.value})} className="w-4 h-4" />
+                      <span className="text-sm">{type}</span>
+                    </label>
+                  ))}
                 </div>
               </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs font-medium text-gray-500 uppercase mb-2">ZIP Code</label>
-                  <input type="text" value={addressForm.zip} onChange={e => setAddressForm({...addressForm, zip: e.target.value})} className="w-full px-4 py-3 border border-gray-300 focus:border-black focus:outline-none" required />
-                </div>
-                <div>
-                  <label className="block text-xs font-medium text-gray-500 uppercase mb-2">Country</label>
-                  <input type="text" value={addressForm.country} onChange={e => setAddressForm({...addressForm, country: e.target.value})} className="w-full px-4 py-3 border border-gray-300 focus:border-black focus:outline-none" required />
-                </div>
-              </div>
+
               <div className="flex items-center gap-2">
-                <input type="checkbox" checked={addressForm.isDefault} onChange={e => setAddressForm({...addressForm, isDefault: e.target.checked})} />
-                <label className="text-sm text-gray-600">Set as default address</label>
+                <input type="checkbox" id="defaultAddress" checked={addressForm.isDefault} onChange={e => setAddressForm({...addressForm, isDefault: e.target.checked})} className="w-4 h-4" />
+                <label htmlFor="defaultAddress" className="text-sm text-gray-600">Set as default address</label>
               </div>
+
               <div className="flex gap-3 pt-4">
                 <button type="button" onClick={closeAddressModal} className="flex-1 px-6 py-3 border border-gray-300 hover:border-black uppercase font-medium text-sm">Cancel</button>
-                <button type="submit" className="flex-1 px-6 py-3 bg-black text-white hover:bg-gray-800 uppercase font-medium text-sm">Save Address</button>
+                <button onClick={handleAddressSubmit} className="flex-1 px-6 py-3 bg-black text-white hover:bg-gray-800 uppercase font-medium text-sm">Save Address</button>
               </div>
-            </form>
+            </div>
           </div>
         </div>
       )}

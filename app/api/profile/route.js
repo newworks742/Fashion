@@ -68,11 +68,11 @@ export async function PUT(req) {
       const { userId, type, street, city, state, zip, country, isDefault } = body;
 
       if (isDefault) {
-        await pool.query("UPDATE addresses SET is_default = false WHERE user_id = $1", [userId]);
+        await pool.query("UPDATE addresses SET is_default = false WHERE id = $1", [userId]);
       }
 
       const q = `
-        INSERT INTO addresses (id, user_id, type, street, city, state, zip, country, is_default)
+        INSERT INTO addresses (id, id, type, street, city, state, zip, country, is_default)
         VALUES (gen_random_uuid(), $1, $2, $3, $4, $5, $6, $7, $8)
         RETURNING *
       `;
@@ -85,7 +85,7 @@ export async function PUT(req) {
       const { addressId, type, street, city, state, zip, country, isDefault, userId } = body;
 
       if (isDefault) {
-        await pool.query("UPDATE addresses SET is_default = false WHERE user_id = $1", [userId]);
+        await pool.query("UPDATE addresses SET is_default = false WHERE id = $1", [userId]);
       }
 
       const q = `
@@ -108,7 +108,7 @@ export async function PUT(req) {
     // -------- SET DEFAULT ADDRESS --------
     if (action === "default") {
       const { userId, addressId } = body;
-      await pool.query("UPDATE addresses SET is_default=false WHERE user_id=$1", [userId]);
+      await pool.query("UPDATE addresses SET is_default=false WHERE id=$1", [userId]);
       await pool.query("UPDATE addresses SET is_default=true WHERE id=$1", [addressId]);
       return new Response(JSON.stringify({ success: true }));
     }
@@ -139,7 +139,7 @@ export async function GET(req) {
     // -------- GET ADDRESSES --------
     if (type === "addresses") {
       const r = await pool.query(
-        "SELECT * FROM addresses WHERE user_id=$1 ORDER BY is_default DESC",
+        "SELECT * FROM addresses WHERE id=$1 ORDER BY is_default DESC",
         [userId]
       );
       return new Response(JSON.stringify(r.rows));
@@ -148,7 +148,7 @@ export async function GET(req) {
     // -------- GET ORDERS --------
     if (type === "orders") {
       const r = await pool.query(
-        "SELECT * FROM orders WHERE user_id=$1 ORDER BY created_at DESC",
+        "SELECT * FROM orders WHERE id=$1 ORDER BY created_at DESC",
         [userId]
       );
       return new Response(JSON.stringify(r.rows));
