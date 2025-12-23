@@ -406,11 +406,11 @@ export default function FashionDashboard() {
       </div>
     </div>
     <div className="flex gap-2 pt-4 border-t border-gray-100">
-      {!address.is_default && (
-        <button onClick={() => setDefaultAddress(index)} className="flex-1 py-2 text-xs font-medium uppercase tracking-wide border border-gray-300 hover:border-black">
-          Set Default
-        </button>
-      )}
+      {/* {!address.is_default && (
+        // <button onClick={() => setDefaultAddress(index)} className="flex-1 py-2 text-xs font-medium uppercase tracking-wide border border-gray-300 hover:border-black">
+        //   Set Default
+        // </button>
+      )} */}
       <button onClick={() => openEditAddress(address)} className="flex-1 py-2 text-xs font-medium uppercase tracking-wide border border-gray-300 hover:border-black">
         Edit
       </button>
