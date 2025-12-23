@@ -4,7 +4,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { User, Package, MapPin, Edit, Plus, Trash2, Loader2, X, Check } from 'lucide-react';
-import { countries, phoneNumberPatterns, countryCurrencyMap } from '../lib/constants';
+import { countries, phoneNumberPatterns } from '../lib/constants';
 
 export default function FashionDashboard() {
   const { data: session, status } = useSession();
