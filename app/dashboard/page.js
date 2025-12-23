@@ -128,7 +128,7 @@ export default function FashionDashboard() {
     }
     try {
       const action = editingAddress ? 'edit' : 'add';
-      const body = { action, userId: session.user.id, ...addressForm };
+      const body = { action, userId: session.user.id, ...addressForm, ...(editingAddress?{ originalAddress: editingAddress } : {}) };
       if (editingAddress?.id) body.addressId = editingAddress.id;
 
       const res = await fetch('/api/register', {
