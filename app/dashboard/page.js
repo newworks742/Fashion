@@ -129,7 +129,7 @@ export default function FashionDashboard() {
     try {
       const action = editingAddress ? 'edit' : 'add';
       const body = { action, userId: session.user.id, ...addressForm };
-      if (editingAddress) body.addressId = editingAddress.id;
+      if (editingAddress?.id) body.addressId = editingAddress.id;
 
       const res = await fetch('/api/register', {
         method: 'PUT',
@@ -148,18 +148,19 @@ export default function FashionDashboard() {
     }
   };
 
-  const deleteAddress = async (addressId) => {
-    if (!confirm('Delete this address?')) return;
-    try {
-      const res = await fetch('/api/register', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'delete', addressId }),
-      });
-      if (res.ok) fetchUserData();
-      else alert('Failed to delete address');
-    } catch (err) { console.error(err); }
-  };
+  const deleteAddress = async (index) => {
+  if (!confirm('Delete this address?')) return;  // Confirmation popup
+  try {
+    const res = await fetch('/api/register', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'delete', userId: session.user.id, index, addressData: addresses[index] }),
+    });
+    if (res.ok) fetchUserData();  // Refresh addresses
+    else alert('Failed to delete address');
+  } catch (err) { console.error(err); alert('Failed to delete address'); }
+};
+
 
   const setDefaultAddress = async (addressId) => {
     try {
@@ -383,42 +384,43 @@ export default function FashionDashboard() {
                 </div>
               ) : (
                 <div className="grid md:grid-cols-2 gap-4">
-                  {addresses.map(address => (
-<div key={address?.id || address?.address_id} className="border border-gray-200 p-6 relative hover:border-black transition-colors">
-                      {address.is_default && (
-                        <div className="absolute top-4 right-4">
-                          <span className="px-3 py-1 bg-black text-white text-xs font-medium uppercase tracking-wide flex items-center gap-1">
-                            <Check size={12} /> Default
-                          </span>
-                        </div>
-                      )}
-                      <div className="mb-4">
-                        <h4 className="font-bold text-black uppercase tracking-wide text-sm mb-3">{address.type}</h4>
-                        <div className="space-y-1 text-sm text-gray-600">
-                          <p className="font-medium text-black">{address.full_name || address.fullName}</p>
-                          {address.mobile && <p>{address.mobile}</p>}
-                          <p>{address.flat_no || address.flatNo}</p>
-                          <p>{address.area}</p>
-                          {address.landmark && <p className="text-gray-500">Landmark: {address.landmark}</p>}
-                          <p>{address.city}, {address.state} - {address.pincode || address.zip}</p>
-                          <p>{address.country || 'India'}</p>
-                        </div>
-                      </div>
-                      <div className="flex gap-2 pt-4 border-t border-gray-100">
-                        {!address.is_default && (
-                          <button onClick={() => setDefaultAddress(address.id)} className="flex-1 py-2 text-xs font-medium uppercase tracking-wide border border-gray-300 hover:border-black">
-                            Set Default
-                          </button>
-                        )}
-                        <button onClick={() => openEditAddress(address)} className="flex-1 py-2 text-xs font-medium uppercase tracking-wide border border-gray-300 hover:border-black">
-                          Edit
-                        </button>
-                        <button onClick={() => deleteAddress(address.id)} className="flex-1 py-2 text-xs font-medium uppercase tracking-wide border border-gray-300 hover:border-red-600 hover:text-red-600">
-                          Delete
-                        </button>
-                      </div>
-                    </div>
-                  ))}
+                 {addresses.map((address, index) => (
+  <div key={`address-${index}`} className="border border-gray-200 p-6 relative hover:border-black transition-colors">
+    {address.is_default && (
+      <div className="absolute top-4 right-4">
+        <span className="px-3 py-1 bg-black text-white text-xs font-medium uppercase tracking-wide flex items-center gap-1">
+          <Check size={12} /> Default
+        </span>
+      </div>
+    )}
+    <div className="mb-4">
+      <h4 className="font-bold text-black uppercase tracking-wide text-sm mb-3">{address.type}</h4>
+      <div className="space-y-1 text-sm text-gray-600">
+        <p className="font-medium text-black">{address.fullName}</p>
+        {address.mobile && <p>{address.mobile}</p>}
+        <p>{address.flatNo}</p>
+        <p>{address.area}</p>
+        {address.landmark && <p className="text-gray-500">Landmark: {address.landmark}</p>}
+        <p>{address.city}, {address.state} - {address.pincode}</p>
+        <p>{address.country || 'India'}</p>
+      </div>
+    </div>
+    <div className="flex gap-2 pt-4 border-t border-gray-100">
+      {!address.is_default && (
+        <button onClick={() => setDefaultAddress(index)} className="flex-1 py-2 text-xs font-medium uppercase tracking-wide border border-gray-300 hover:border-black">
+          Set Default
+        </button>
+      )}
+      <button onClick={() => openEditAddress(address)} className="flex-1 py-2 text-xs font-medium uppercase tracking-wide border border-gray-300 hover:border-black">
+        Edit
+      </button>
+      <button onClick={() => deleteAddress(index)} className="flex-1 py-2 text-xs font-medium uppercase tracking-wide border border-gray-300 hover:border-red-600 hover:text-red-600">
+        Delete
+      </button>
+    </div>
+  </div>
+))}
+
                 </div>
               )}
               {addresses.length > 0 && addresses.length < 2 && (
@@ -504,7 +506,7 @@ export default function FashionDashboard() {
                   )}
                 </div>
 
-                <div>
+                <div> 
                   <label className="block text-xs font-medium text-gray-500 uppercase mb-2">Phone *</label>
                   <div className="flex">
                     <span className="px-3 py-2 bg-gray-100 border border-gray-300 rounded-l-md text-sm text-gray-700">
